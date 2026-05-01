@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE = window.location.hostname.includes('localhost') ? 'http://localhost:8000/api' : '/api';
+const API_BASE = window.location.hostname.includes('localhost') ? 'http://localhost:8000/api' : 'https://goec-api-service.gegdhxd6w9a9t.ap-south-1.cs.amazonlightsail.com/api';
 
 export const submitContactForm = async (formData) => {
     try {
