@@ -8,6 +8,8 @@ import {
 import { Button } from "../components/ui/button";
 import { submitContactForm } from '../mock';
 import { toast } from "sonner";
+import heroVideo from '../assets/hero-video.mp4';
+
 
 const AnimatedCounter = ({ end, duration = 2000, suffix = "" }) => {
   const [count, setCount] = useState(0);
@@ -313,7 +315,7 @@ const LandingPage = () => {
               loop 
               muted 
               playsInline
-              src="/hero-video.mp4" 
+              src={heroVideo} 
               className="w-full h-full object-cover object-center"
             />
             <div className="absolute inset-0 bg-[#081226]/40 z-10" />
