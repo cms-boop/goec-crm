@@ -1,0 +1,64 @@
+name: Deploy to Lightsail
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-south-1
+
+    - name: Install Lightsail Control Plugin
+      run: |
+        curl "https://s3.us-west-2.amazonaws.com/lightsailctl/latest/linux-amd64/lightsailctl" -o "lightsailctl"
+        chmod +x "lightsailctl"
+        sudo mv "lightsailctl" /usr/local/bin/
+
+    - name: Build and Push Image
+      run: |
+        # Build the image
+        docker build -t goec-api ./api
+        
+        # Push to Lightsail (Note: service-name must match your Lightsail service name)
+        aws lightsail push-container-image \
+          --service-name goec-api-service \
+          --label latest \
+          --image goec-api
+
+    - name: Deploy to Lightsail
+      run: |
+        # Get the pushed image name
+        IMAGE_NAME=$(aws lightsail get-container-images --service-name goec-api-service | jq -r '.containerImages[0].image')
+        
+        # Create deployment
+        aws lightsail create-container-service-deployment \
+          --service-name goec-api-service \
+          --containers "{
+            \"api\": {
+              \"image\": \"$IMAGE_NAME\",
+              \"environment\": {
+                \"DATABASE_URL\": \"${{ secrets.DATABASE_URL }}\"
+              },
+              \"ports\": {
+                \"8000\": \"HTTP\"
+              }
+            }
+          }" \
+          --public-endpoint "{
+            \"containerName\": \"api\",
+            \"containerPort\": 8000,
+            \"healthCheck\": {
+              \"path\": \"/api/\",
+              \"successCodes\": \"200\"
+            }
+          }"
