@@ -313,7 +313,7 @@ const LandingPage = () => {
               loop 
               muted 
               playsInline
-              src="/website video.mp4" 
+              src="/hero-video.mp4" 
               className="w-full h-full object-cover object-center"
             />
             <div className="absolute inset-0 bg-[#081226]/40 z-10" />
